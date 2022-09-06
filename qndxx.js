@@ -72,7 +72,7 @@ let msg =``;
                 log(`\n========= 开始【第 ${num} 个账号】=========\n`)
 
                 token = qndxxTokenArr[index];
-                log(token)
+                //log(token)
                 loginBack =0
                 log('开始登录...');
                 await login()
