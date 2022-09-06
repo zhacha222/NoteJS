@@ -67,7 +67,7 @@ let msg =``;
                 let num = index + 1
                 if (num >1){
                     log('**********休息15s，防止黑IP**********');
-                    await $.wait(1 * 1000);
+                    await $.wait(15 * 1000);
                 }
                 log(`\n========= 开始【第 ${num} 个账号】=========\n`)
 
