@@ -27,6 +27,6 @@ ql repo https://github.com/zhacha222/qingniandaxuexi.git
  定时：`一周一次（默认每周二早上8点执行一次）`
  
  ```
- cron：0 8 * * Tue
+ cron：0 8 * * 2 
  ```
 
