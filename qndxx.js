@@ -165,11 +165,12 @@ function PunchIn(timeout = 3 * 1000) {
                     name = result.data.data[0].name
                     status = result.data.data[0].status  //1为正在学习中，2为当前不在学习时间段内
                     isStudy = result.data.data[0].isStudy //1为已学习，2为未学习
+                    log(`本周学习：`+name)
                     if(isStudy==1){
-                        log(`🆗 本周您已经学习了，无需重复学习`)
+                        log(`🆗 您已经学习了，无需重复学习`)
                         status_code =2
                     }else{
-                        log(`本周暂未进行学习，开始学习···`)
+                        log(`暂未进行学习，开始学习···`)
                         PunchInBack =1
                     }
                 } else if(result.code == 1004) {
