@@ -14,6 +14,7 @@ cron: 0 8 * * 2
 
  工作日志：
  1.0.0 完成学习的基本功能
+ 1.0.1 修改doPunchIn一处单词错误
 
  */
 
@@ -26,7 +27,7 @@ const notify = $.isNode() ? require('./sendNotify') : '';
 const {log} = console;
 
 //////////////////////
-let scriptVersion = "1.0.0";
+let scriptVersion = "1.0.1";
 let scriptVersionLatest = '';
 //我在校园账号数据
 let qndxxToken = ($.isNode() ? process.env.qndxxToken : $.getdata("qndxxToken")) || "";
