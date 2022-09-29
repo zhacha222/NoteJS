@@ -199,7 +199,7 @@ function PunchIn(timeout = 3 * 1000) {
 function doPunchIn(timeout = 3 * 1000) {
     return new Promise((resolve) => {
         let url = {
-            url: `https://www.sxgqt.org.cn/h5sxapiv2/study/statistics?type=new&id=${token}`,
+            url: `https://www.sxgqt.org.cn/h5sxapiv2/study/statistics?type=new&id=${id}`,
             headers: {
                 "token": `${token}`
             },
@@ -241,7 +241,7 @@ function getResult(timeout = 3 * 1000) {
     if (res == 1) return "✅ 学习成功"
     if (res == 2) return "🆗 本周您已经学习了，无需重复学习"
     if (res == 3) return "❌ 学习失败，当前不在学习时间段内"
-    if (res == 4) return "❌ 学习失败，token无效"
+    if (res == 4) return "❌ 学习失败，token已失效"
     else return "❌ 学习失败，发生未知错误"
 }
 
