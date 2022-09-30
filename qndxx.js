@@ -387,7 +387,7 @@ function modify() {
 function getVersion(timeout = 3 * 1000) {
     return new Promise((resolve) => {
         let url = {
-            url: `https://ghproxy.com/https://raw.githubusercontent.com/zhacha222/qingniandaxuexi/main/qndxx.js`,
+            url: `https://ghproxy.com/https://raw.githubusercontent.com/zhacha222/NoteJS/main/qndxx.js`,
         }
         $.get(url, async (err, resp, data) => {
             try {
