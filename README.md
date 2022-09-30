@@ -1,15 +1,18 @@
-# 青年大学习 ，青龙面板，每周自动学习 （仅适用于 陕西省 三秦青年）
-
-## 抓包：
-开着抓包软件进入公众号【三秦青年】——青年大学习，抓 www.sxgqt.org.cn 包中 request header里的token
+# 一些随手写的脚本  青龙面板专用
 
 ## 拉库
 
 ```
-ql repo https://github.com/zhacha222/qingniandaxuexi.git
+ql repo https://github.com/zhacha222/NoteJS.git
 ```
 
-## 环境变量
+## 1.青年大学习 ，每周自动学习 （仅适用于 陕西省 三秦青年）
+
+#### 抓包：
+开着抓包软件进入公众号【三秦青年】——青年大学习，抓 www.sxgqt.org.cn 包中 request header里的token
+#### token有效期只有一天，未解决
+
+#### 环境变量
 
 变量名称：`qndxxToken`
  
@@ -24,9 +27,6 @@ ql repo https://github.com/zhacha222/qingniandaxuexi.git
  ```
 
 
-
-## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-## token有效期只有一天，正在想办法解决
 
 
 
