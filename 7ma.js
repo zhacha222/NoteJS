@@ -25,7 +25,7 @@ const notify = $.isNode() ? require('./sendNotify') : '';
 const {log} = console;
 //////////////////////
 let scriptVersion = "1.0.0";
-let scriptVersionLatest = '1.0.0 完成签到、看广告等基本内容';
+let scriptVersionLatest = "1.0.0 完成签到、看广告等基本内容";
 let update_data = '';
 //7MA出行账号数据
 let mateToken = ($.isNode() ? process.env.mateToken : $.getdata("mateToken")) || "";
