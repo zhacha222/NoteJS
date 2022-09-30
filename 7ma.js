@@ -2,7 +2,7 @@
  作者QQ:1483081359 欢迎前来提交bug
  7MA出行 每日签到、看广告得积分  每天18积分，188积分可换3次免费骑行
  github仓库： https://github.com/zhacha222/NoteJS
- 
+
  抓包：7MA出行 微信小程序或者app都可以，抓 newmapi.7mate.cn 这个域名下 hearders 部分的 Authorization ,
  把抓到的值去掉 Bearer，只保留 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUxxxxxxxxxxxxxxxxx 后面这部分
 
@@ -11,10 +11,20 @@
  定时一天一次
  cron: 10 12 * * *
 
+ [task_local]
+ #7MA出行
+ 10 12 * * * https://raw.githubusercontent.com/zhacha222/NoteJS/main/7ma.js, tag=7MA出行, enabled=true
+ [rewrite_local]
+ https://newmapi.7mate.cn/api/user url script-request-hearder https://raw.githubusercontent.com/zhacha222/NoteJS/main/7ma.js
+ [MITM]
+ hostname = newmapi.7mate.cn
+
  工作日志：
  1.0.0 完成签到、看广告等基本内容
+ 1.0.1 适配圈x
 
  */
+//cron: 10 12 * * *
 
 //===============通知设置=================//
 const Notify = 1; //0为关闭通知，1为打开通知,默认为1
@@ -25,8 +35,8 @@ const notify = $.isNode() ? require('./sendNotify') : '';
 const {log} = console;
 //////////////////////
 let scriptVersion = "1.0.0";
-let scriptVersionLatest = "1.0.0 完成签到、看广告等基本内容";
-let update_data = '';
+let scriptVersionLatest = "";
+let update_data = '1.0.1 适配圈x';
 //7MA出行账号数据
 let mateToken = ($.isNode() ? process.env.mateToken : $.getdata("mateToken")) || "";
 let mateTokenArr = [];
@@ -145,9 +155,9 @@ function login(timeout = 3 * 1000) {
                     login_notice_log = `登录失败，\n`+decodeURI(result.message)
                     loginBack =0
                 }else{
-                 login_log =`登录失败，发送未知错误`
-                 loginBack =0
-                 }
+                    login_log =`登录失败，发送未知错误`
+                    loginBack =0
+                }
 
             } catch (e) {
                 log(e)
@@ -286,6 +296,23 @@ function adResult(timeout = 3 * 1000) {
     })
 }
 
+// ============================================重写============================================ \\
+async function GetRewrite() {
+    if ($request.url.indexOf("api/user") > -1) {
+        const ck = $request.hearder.Authorization;
+        if (mateToken) {
+            if (mateToken.indexOf(ck) == -1) {
+                mateToken = mateToken + "@" + ck;
+                $.setdata(mateToken, "mateToken");
+                let List = mateToken.split("@");
+                $.msg(`【${$.name}】` + ` 获取第${List.length}个 ck 成功: ${ck} ,不用请自行关闭重写!`);
+            }
+        } else {
+            $.setdata(ck, "mateToken");
+            $.msg(`【${$.name}】` + ` 获取第1个 ck 成功: ${ck} ,不用请自行关闭重写!`);
+        }
+    }
+}
 
 // ============================================变量检查============================================ \\
 async function Envs() {
