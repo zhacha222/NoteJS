@@ -34,7 +34,7 @@ const $ = new Env('7MA出行');
 const notify = $.isNode() ? require('./sendNotify') : '';
 const {log} = console;
 //////////////////////
-let scriptVersion = "1.0.1";
+let scriptVersion = "1.0.0";
 let scriptVersionLatest = "";
 let update_data = '1.0.1 适配圈x';
 //7MA出行账号数据
@@ -299,7 +299,7 @@ function adResult(timeout = 3 * 1000) {
 // ============================================重写============================================ \\
 async function GetRewrite() {
     if ($request.url.indexOf("api/user") > -1) {
-        const ck = $request.hearder.Authorization;
+        const ck = $request.hearders.Authorization;
         if (mateToken) {
             if (mateToken.indexOf(ck) == -1) {
                 mateToken = mateToken + "@" + ck;
@@ -345,7 +345,7 @@ async function SendMsg(msg) {
     if (Notify > 0) {
         if ($.isNode()) {
             var notify = require('./sendNotify');
-            await notify.sendNotify($.name, msg+ `\n学习时间：${t()}\n`);
+            await notify.sendNotify($.name, msg+ `\n运行时间：${t()}\n`);
         } else {
             $.msg(msg);
         }
