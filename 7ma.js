@@ -34,7 +34,7 @@ const $ = new Env('7MA出行');
 const notify = $.isNode() ? require('./sendNotify') : '';
 const {log} = console;
 //////////////////////
-let scriptVersion = "1.0.0";
+let scriptVersion = "1.0.1";
 let scriptVersionLatest = "";
 let update_data = '1.0.1 适配圈x';
 //7MA出行账号数据
