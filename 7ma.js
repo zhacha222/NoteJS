@@ -1,14 +1,13 @@
 /**
  作者QQ:1483081359 欢迎前来提交bug
- 7MA出行 每日签到、看广告得积分，积分换免费卡
+ 7MA出行 每日签到、看广告得积分  每天18积分，188积分可换3次免费骑行
  github仓库： https://github.com/zhacha222/NoteJS
-
- 7MA出行 微信小程序或者app都可以
-
- 抓包：newmapi.7mate.cn这个域名下 hearders 部分的 Authorization ,
- 把抓到的值去掉 Bearer，只保留 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3Mi····· 后面这部分
+ 
+ 抓包：7MA出行 微信小程序或者app都可以，抓 newmapi.7mate.cn 这个域名下 hearders 部分的 Authorization ,
+ 把抓到的值去掉 Bearer，只保留 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUxxxxxxxxxxxxxxxxx 后面这部分
 
  变量：mateToken  多个账号 换行分割
+
  定时一天一次
  cron: 10 12 * * *
 
@@ -26,8 +25,9 @@ const notify = $.isNode() ? require('./sendNotify') : '';
 const {log} = console;
 //////////////////////
 let scriptVersion = "1.0.0";
-let scriptVersionLatest = '';
-//我在校园账号数据
+let scriptVersionLatest = '1.0.0 完成签到、看广告等基本内容';
+let update_data = '';
+//7MA出行账号数据
 let mateToken = ($.isNode() ? process.env.mateToken : $.getdata("mateToken")) || "";
 let mateTokenArr = [];
 let login_log =``;
@@ -54,6 +54,11 @@ let msg =``;
             await poem();
             await getVersion();
             log(`\n============ 当前版本：${scriptVersion}  最新版本：${scriptVersionLatest} ============`)
+
+            if(scriptVersionLatest != scriptVersion){
+                log(`\n发现新版本,请拉库更新！\n${update_data}`)
+            }
+
             log(`\n=================== 共找到 ${mateTokenArr.length} 个账号 ===================`)
 
 
@@ -422,11 +427,12 @@ function modify() {
 function getVersion(timeout = 3 * 1000) {
     return new Promise((resolve) => {
         let url = {
-            url: `https://ghproxy.com/https://raw.githubusercontent.com/zhacha222/qingniandaxuexi/main/qndxx.js`,
+            url: `https://ghproxy.com/https://raw.githubusercontent.com/zhacha222/NoteJS/main/7ma.js`,
         }
         $.get(url, async (err, resp, data) => {
             try {
                 scriptVersionLatest = data.match(/scriptVersion = "([\d\.]+)"/)[1]
+                update_data = data.match(/update_data = "(.*?)"/)[1]
             } catch (e) {
                 $.logErr(e, resp);
             } finally {
