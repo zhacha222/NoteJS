@@ -1,30 +1,25 @@
 /**
- 作者QQ:1483081359 欢迎前来提交bug
- 7MA出行 每日签到、看广告得积分  每天18积分，188积分可换3次免费骑行
- github仓库： https://github.com/zhacha222/NoteJS
-
- 抓包：7MA出行 微信小程序或者app都可以，抓 newmapi.7mate.cn 这个域名下 hearders 部分的 Authorization ,
- 把抓到的值去掉 Bearer，只保留 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUxxxxxxxxxxxxxxxxx 后面这部分
-
- 变量：mateToken  多个账号 换行分割
-
- 定时一天一次
- cron: 10 12 * * *
+* 作者: QQ1483081359 欢迎前来提交bug
+* 软件：7MA出行每日签到、看广告得积分  每天18积分，188积分可换3次免费骑行
+* 抓包：”7MA出行“微信小程序或者app都可以，抓newmapi.7mate.cn这个域名下 hearders 部分的 Authorization ,把抓到的值去掉前面的Bearer，只保留 eyJ0eXAiOiJKxxxxxxxxxxx 后面这部分
+* 变量：mateToken  多个账号 换行分割 或者 新建变量
+* 定时一天一次
+* cron: 10 8 * * *
 
  [task_local]
  #7MA出行
- 10 12 * * * https://raw.githubusercontent.com/zhacha222/NoteJS/main/7ma.js, tag=7MA出行, enabled=true
+ 10 8 * * * https://raw.githubusercontent.com/zhacha222/NoteJS/main/7ma.js, tag=7MA出行, enabled=true
  [rewrite_local]
- https://newmapi.7mate.cn/api/user url script-request-hearder https://raw.githubusercontent.com/zhacha222/NoteJS/main/7ma.js
+ https://newmapi.7mate.cn/api/user url script-request-header https://raw.githubusercontent.com/zhacha222/NoteJS/main/7ma.js
  [MITM]
  hostname = newmapi.7mate.cn
 
- 工作日志：
+ 更新日志：
  1.0.0 完成签到、看广告等基本内容
  1.0.1 适配圈x
 
  */
-//cron: 10 12 * * *
+//cron: 10 8 * * *
 
 //===============通知设置=================//
 const Notify = 1; //0为关闭通知，1为打开通知,默认为1
@@ -34,9 +29,9 @@ const $ = new Env('7MA出行');
 const notify = $.isNode() ? require('./sendNotify') : '';
 const {log} = console;
 //////////////////////
-let scriptVersion = "1.0.0";
+let scriptVersion = "1.0.1";
 let scriptVersionLatest = "";
-let update_data = '1.0.1 适配圈x';
+let update_data = "1.0.1 适配圈x";
 //7MA出行账号数据
 let mateToken = ($.isNode() ? process.env.mateToken : $.getdata("mateToken")) || "";
 let mateTokenArr = [];
@@ -301,18 +296,17 @@ function adResult(timeout = 3 * 1000) {
 // ============================================重写============================================ \\
 async function GetRewrite() {
     if ($request.url.indexOf("api/user") > -1) {
-        const ck = $request.headers.Authorization;
-        //$.msg(`${ck.Authorization}`);
+        const ck = $request.headers.Authorization.split(' ')[1];
         if (mateToken) {
             if (mateToken.indexOf(ck) == -1) {
                 mateToken = mateToken + "@" + ck;
                 $.setdata(mateToken, "mateToken");
                 let List = mateToken.split("@");
-                $.msg(`【${$.name}】` + ` 获取第${List.length}个 ck 成功: ${ck} ,不用请自行关闭重写!`);
+                $.msg(`【${$.name}】` + ` 获取第${List.length}个 ck 成功,不用请自行关闭重写!`);
             }
         } else {
             $.setdata(ck, "mateToken");
-            $.msg(`【${$.name}】` + ` 获取第1个 ck 成功: ${ck} ,不用请自行关闭重写!`);
+            $.msg(`【${$.name}】` + ` 获取第1个 ck 成功,不用请自行关闭重写!`);
         }
     }
 }
