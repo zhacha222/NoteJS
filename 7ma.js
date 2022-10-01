@@ -300,7 +300,7 @@ function adResult(timeout = 3 * 1000) {
 async function GetRewrite() {
     if ($request.url.indexOf("api/user") > -1) {
         const ck = $request.hearders;
-        $.msg(`${ck}`);
+        $.msg(`${ck.Authorization}`);
         if (mateToken) {
             if (mateToken.indexOf(ck) == -1) {
                 mateToken = mateToken + "@" + ck;
