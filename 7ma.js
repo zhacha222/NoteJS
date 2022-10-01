@@ -299,14 +299,14 @@ async function GetRewrite() {
         const ck = $request.headers.Authorization.split(' ')[1];
         if (mateToken) {
             if (mateToken.indexOf(ck) == -1) {
-                mateToken = mateToken + "@" + ck;
+                mateToken = mateToken + "\n" + ck;
                 $.setdata(mateToken, "mateToken");
-                let List = mateToken.split("@");
-                $.msg(`【${$.name}】` + ` 获取第${List.length}个 ck 成功,不用请自行关闭重写!`);
+                let List = mateToken.split("\n");
+                $.msg(`【${$.name}】` + ` 获取第${List.length}个 ck 成功`);
             }
         } else {
             $.setdata(ck, "mateToken");
-            $.msg(`【${$.name}】` + ` 获取第1个 ck 成功,不用请自行关闭重写!`);
+            $.msg(`【${$.name}】` + ` 获取第1个 ck 成功`);
         }
     }
 }
