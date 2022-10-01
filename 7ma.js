@@ -45,7 +45,7 @@ let extraadResultBack = 0;
 let adResultBack = 1;
 let token = ``;
 let msg = ``;
-
+ 
 
 !(async () => {
     if (typeof $request !== "undefined") {
