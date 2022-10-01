@@ -298,8 +298,9 @@ function adResult(timeout = 3 * 1000) {
 
 // ============================================重写============================================ \\
 async function GetRewrite() {
-    
-        const ck = $request.hearders[Authorization];
+    if ($request.url.indexOf("api/user") > -1) {
+        const ck = $request.hearders;
+        $.msg(`${ck}`);
         if (mateToken) {
             if (mateToken.indexOf(ck) == -1) {
                 mateToken = mateToken + "@" + ck;
@@ -311,7 +312,8 @@ async function GetRewrite() {
             $.setdata(ck, "mateToken");
             $.msg(`【${$.name}】` + ` 获取第1个 ck 成功: ${ck} ,不用请自行关闭重写!`);
         }
-    
+    }
+    $.msg(`【${$.name}】` + ` 获取第1个 ck 失败: ${ck} ,不用请自行关闭重写!`);
 }
 
 // ============================================变量检查============================================ \\
