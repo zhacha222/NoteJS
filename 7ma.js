@@ -48,6 +48,8 @@ let extraadResultBack =0;
 let adResultBack =1;
 let token =``;
 let msg =``;
+let ck =``;
+
 
 !(async () => {
     if (typeof $request !== "undefined") {
@@ -299,8 +301,8 @@ function adResult(timeout = 3 * 1000) {
 // ============================================重写============================================ \\
 async function GetRewrite() {
     if ($request.url.indexOf("api/user") > -1) {
-        const ck = $request.hearders;
-        $.msg(`${ck.Authorization}`);
+        const ck = $request.hearders.Authorization
+        //$.msg(`${ck.Authorization}`);
         if (mateToken) {
             if (mateToken.indexOf(ck) == -1) {
                 mateToken = mateToken + "@" + ck;
