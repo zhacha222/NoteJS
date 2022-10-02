@@ -1,22 +1,27 @@
 /**
- 作者QQ:1483081359 欢迎前来提交bug
- 青年大学习 每周自动学习
- github仓库：  https://github.com/zhacha222/qingniandaxuexi
+* 作者: QQ1483081359 欢迎前来提交bug
+* 微信公众号：三秦青年 青年大学习 每周自动学习
+* 抓包：开着抓包软件进入 公众号【三秦青年】——青年大学习，抓 www.sxgqt.org.cn 包中 request header里的 token
+* 变量：qndxxToken  多个账号 换行分割 或者 新建变量
+* 定时：一周一次（默认每周二早上8点执行一次）
+* cron: 0 8 * * 2
+* github仓库：https://github.com/zhacha222/NoteJS
 
- 抓包：开着抓包软件进入公众号【三秦青年】——青年大学习，抓 www.sxgqt.org.cn 包中 request header里的token
-
- 变量名称：qndxxToken
- 多用户用在【环境变量】内单独新建变量；
- 也可以 只建一个变量，多用户的Token换行隔开，或者用 & 隔开 例如：xxxxx&xxxxx&xxxxx
-
- 定时：一周一次（默认每周二早上8点执行一次）
-cron: 0 8 * * 2
+ [task_local]
+ #青年大学习
+ 0 8 * * 2 https://ghproxy.com/https://raw.githubusercontent.com/zhacha222/NoteJS/main/qndxx.js, tag=7MA出行, enabled=true
+ [rewrite_local]
+ https://www.sxgqt.org.cn/h5sxapiv2/user/base url script-request-header https://ghproxy.com/https://raw.githubusercontent.com/zhacha222/NoteJS/main/qndxx.js
+ [MITM]
+ hostname = www.sxgqt.org.cn
 
  工作日志：
  1.0.0 完成学习的基本功能
  1.0.1 修改doPunchIn一处单词错误
+ 1.0.2 适配圈x
 
  */
+//cron: 0 8 * * 2
 
 //===============通知设置=================//
 const Notify = 1; //0为关闭通知，1为打开通知,默认为1
@@ -25,11 +30,11 @@ const Notify = 1; //0为关闭通知，1为打开通知,默认为1
 const $ = new Env('青年大学习');
 const notify = $.isNode() ? require('./sendNotify') : '';
 const {log} = console;
-
 //////////////////////
-let scriptVersion = "1.0.1";
-let scriptVersionLatest = '';
-//我在校园账号数据
+let scriptVersion = "1.0.2";
+let scriptVersionLatest = "";
+let update_data = "1.0.2 适配圈x";
+//青年大学习账号数据
 let qndxxToken = ($.isNode() ? process.env.qndxxToken : $.getdata("qndxxToken")) || "";
 let qndxxTokenArr = [];
 let loginBack =0;
@@ -59,6 +64,11 @@ let msg =``;
             await poem();
             await getVersion();
             log(`\n============ 当前版本：${scriptVersion}  最新版本：${scriptVersionLatest} ============`)
+
+            if (scriptVersionLatest != scriptVersion) {
+                log(`\n发现新版本,请拉库更新！\n${update_data}`)
+            }
+
             log(`\n=================== 共找到 ${qndxxTokenArr.length} 个账号 ===================`)
 
 
@@ -246,6 +256,23 @@ function getResult(timeout = 3 * 1000) {
     else return "❌ 学习失败，发生未知错误"
 }
 
+// ============================================重写============================================ \\
+async function GetRewrite() {
+    if ($request.url.indexOf("user/base") > -1) {
+        const ck = $request.headers.token;
+        if (qndxxToken) {
+            if (qndxxToken.indexOf(ck) == -1) {
+                qndxxToken = qndxxToken + "\n" + ck;
+                $.setdata(qndxxToken, "qndxxToken");
+                let List = qndxxToken.split("\n");
+                $.msg(`【${$.name}】` + ` 获取第${List.length}个 ck 成功：${ck}`);
+            }
+        } else {
+            $.setdata(ck, "qndxxToken");
+            $.msg(`【${$.name}】` + ` 获取第1个 ck 成功：${ck}`);
+        }
+    }
+}
 
 // ============================================变量检查============================================ \\
 async function Envs() {
@@ -255,10 +282,10 @@ async function Envs() {
                 qndxxTokenArr.push(item);
             });
         }
-            else if (qndxxToken.indexOf("\n") != -1) {
-                qndxxToken.split("\n").forEach((item) => {
-                    qndxxTokenArr.push(item);
-                });
+        else if (qndxxToken.indexOf("\n") != -1) {
+            qndxxToken.split("\n").forEach((item) => {
+                qndxxTokenArr.push(item);
+            });
         }
         else {
             qndxxTokenArr.push(qndxxToken);
@@ -283,7 +310,7 @@ async function SendMsg(msg) {
             $.msg(msg);
         }
     } else {
-        //log(msg);
+        log(msg);
     }
 }
 
@@ -392,6 +419,7 @@ function getVersion(timeout = 3 * 1000) {
         $.get(url, async (err, resp, data) => {
             try {
                 scriptVersionLatest = data.match(/scriptVersion = "([\d\.]+)"/)[1]
+                update_data = data.match(/update_data = "(.*?)"/)[1]
             } catch (e) {
                 $.logErr(e, resp);
             } finally {
