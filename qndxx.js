@@ -9,7 +9,7 @@
 
  [task_local]
  #青年大学习
- 0 8 * * 2 https://ghproxy.com/https://raw.githubusercontent.com/zhacha222/NoteJS/main/qndxx.js, tag=7MA出行, enabled=true
+ 0 8 * * 2 https://ghproxy.com/https://raw.githubusercontent.com/zhacha222/NoteJS/main/qndxx.js, tag=青年大学习, enabled=true
  [rewrite_local]
  https://www.sxgqt.org.cn/h5sxapiv2/user/base url script-request-header https://ghproxy.com/https://raw.githubusercontent.com/zhacha222/NoteJS/main/qndxx.js
  [MITM]
