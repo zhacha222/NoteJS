@@ -62,7 +62,7 @@ ql repo https://github.com/zhacha222/NoteJS.git
  hostname = newmapi.7mate.cn
  ```
 
-## 2.“云达人 qpp” 每日签到、观看视频，浏览二手市场，浏览校园头条文章得积分
+## 3.“云达人 qpp” 每日签到、观看视频，浏览二手市场，浏览校园头条文章得积分
 
  #### 定时：`15 8 * * *`
 
