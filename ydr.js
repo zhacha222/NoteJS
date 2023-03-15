@@ -9,18 +9,18 @@
         "Authorization": "xxxxxxxxx",
         "video_sign": "xxxxxxxxx",
         "market_sign": "xxxxxxxxx",
-        "article_sign": "xxxxxxxxx",
+        "article_sign": "xxxxxxxxx"
         }
 
  ***关于变量值中各参数的说明:
-     uid ———————————————————— h5.jinghaojian.net 包中 request header里的uid
-     Authorization —————————— h5.jinghaojian.net 包中 request header里的Authorization，不要带前面的Bearer
-     video_sign ————————————— 观看视频获得积分的sign
-     market_sign ———————————— 浏览二手市场获得积分的sign
-     article_sign ——————————— 浏览校园头条文章获得积分的sign
+ uid ———————————————————— h5.jinghaojian.net 包中 request header里的uid
+ Authorization —————————— h5.jinghaojian.net 包中 request header里的Authorization，不要带前面的Bearer
+ video_sign ————————————— 观看视频获得积分的sign
+ market_sign ———————————— 浏览二手市场获得积分的sign
+ article_sign ——————————— 浏览校园头条文章获得积分的sign
 
  ***注意事项:
- 1.只支持青龙，未适配圈x 
+ 1.只支持青龙，未适配圈x
  2.脚本变量只推荐在青龙的【环境变量】页添加，有强迫症在【配置文件】config.sh中添加的如果出现问题自己解决
  3.支持多用户，每一用户在【环境变量】单独新建变量ydrToken，切勿一个变量内填写多个用户的参数
  4.变量中的所有符号都是 英文符号 ！！！
@@ -70,6 +70,7 @@ let signInBack =``;
 let videoBack =``;
 let marketBack =``;
 let articleBack =``;
+let msg =``;
 
 
 !(async () => {
@@ -172,19 +173,20 @@ function detail(timeout = 3 * 1000) {
         }
 
         $.get(url, async (error, response, data) => {
+            //log(data)
             try {
                 let result = data == "undefined" ? await detail() : JSON.parse(data);
                 if (result.code==200) {
                     //log(`登录成功\n昵称:${result.nickname}\n手机号：${result.username}\n积分：${result.score}`)
-                    detail_log = `登录成功\n昵称:${result.nickname}\n手机号：${result.username}\n积分：${result.score}`
-                    detail_notice_log = `昵称:${result.nickname}\n手机号：${result.username}\n积分：${result.score}`
+                    detail_log = `登录成功\n昵称:${result.data.nickname}\n手机号：${result.data.username}\n积分：${result.data.score}`
+                    detail_notice_log = `昵称:${result.data.nickname}\n手机号：${result.data.username}\n积分：${result.data.score}`
                     detailBack = 1
-                } else if (result.code==A0001) {
+                } else if (result.code==`A0001`) {
                     //log(result.msg)
                     detail_log = `登录失败，` + decodeURI(result.msg)
                     detail_notice_log = `登录失败，\n` + decodeURI(result.msg)
                     detailBack = 0
-                } else if (result.code==A0003) {
+                } else if (result.code==`A0003`) {
                     log(result.msg)
                     detailBack = 0
                 } else {
@@ -216,16 +218,20 @@ function signIn(timeout = 3 * 1000) {
         }
 
         $.get(url, async (error, response, data) => {
+            log(data)
             try {
                 let result = data == "undefined" ? await signIn() : JSON.parse(data);
-               // {"code":"200","msg":"成功","data":{"score":25,"totalScore":165}}
+                // {"code":"200","msg":"成功","data":{"score":25,"totalScore":165}}
+                if (result.code==`A0100`) { //重复签到
+                    log(result.msg)
+                    signInBack = 1
+                    return;
+                }
+
                 if (result.code==200) {
                     log(`签到成功，获得${result.data.score}积分`)
                     signInBack = 1
-                } else if (result.code==A0100) { //重复签到
-                    log(result.msg)
-                    signInBack = 1
-                } else {
+                }else {
                     log(`签到失败，发生未知错误 ❌`)
                     signInBack = 0
                 }
@@ -247,7 +253,7 @@ function signIn(timeout = 3 * 1000) {
 function video(timeout = 3 * 1000) {
     return new Promise((resolve) => {
         let url = {
-            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`;
+            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`,
             headers: {
                 'Connection' : `keep-alive`,
                 'Accept-Encoding' : `gzip, deflate`,
@@ -265,15 +271,19 @@ function video(timeout = 3 * 1000) {
         }
 
         $.post(url, async (error, response, data) => {
+            log(data)
             try {
                 let result = data == "undefined" ? await video() : JSON.parse(data);
+                if (result.data.score==null) { //重复观看
+                    log(`今日已完成观看视频任务`)
+                    videoBack = 1
+                    return;
+                }
+
                 if (result.code==200) {
                     log(`观看视频成功，获得30积分`)
                     videoBack = 1
-                } else if (result.data.score==`null`) { //重复观看
-                    log(`今日已完成观看视频任务`)
-                    videoBack = 1
-                } else {
+                }  else {
                     log(`观看失败，发生未知错误 ❌`)
                     videoBack = 0
                 }
@@ -295,7 +305,7 @@ function video(timeout = 3 * 1000) {
 function market(timeout = 3 * 1000) {
     return new Promise((resolve) => {
         let url = {
-            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`;
+            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`,
             headers: {
                 'Connection' : `keep-alive`,
                 'Accept-Encoding' : `gzip, deflate`,
@@ -313,13 +323,17 @@ function market(timeout = 3 * 1000) {
         }
 
         $.post(url, async (error, response, data) => {
+            log(data)
             try {
                 let result = data == "undefined" ? await market() : JSON.parse(data);
+                if (result.data.score==null) { //重复浏览
+                    log(`今日已浏览过二手市场页面`)
+                    marketBack = 1
+                    return;
+                }
+
                 if (result.code==200) {
                     log(`浏览二手市场页面，获得10积分`)
-                    marketBack = 1
-                } else if (result.data.score==`null`) { //重复浏览
-                    log(`今日已浏览过二手市场页面`)
                     marketBack = 1
                 } else {
                     log(`浏览失败，发生未知错误 ❌`)
@@ -343,7 +357,7 @@ function market(timeout = 3 * 1000) {
 function article(timeout = 3 * 1000) {
     return new Promise((resolve) => {
         let url = {
-            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`;
+            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`,
             headers: {
                 'Connection' : `keep-alive`,
                 'Accept-Encoding' : `gzip, deflate`,
@@ -361,15 +375,18 @@ function article(timeout = 3 * 1000) {
         }
 
         $.post(url, async (error, response, data) => {
+            log(data)
             try {
                 let result = data == "undefined" ? await article() : JSON.parse(data);
+                if (result.data.score==null) { //重复浏览
+                    log(`今日已浏览过校园头条文章`)
+                    articleBack = 1
+                    return;
+                }
                 if (result.code==200) {
                     log(`浏览校园头条文章，获得10积分`)
                     articleBack = 1
-                } else if (result.data.score==`null`) { //重复浏览
-                    log(`今日已浏览过校园头条文章`)
-                    articleBack = 1
-                } else {
+                }  else {
                     log(`浏览失败，发生未知错误 ❌`)
                     articleBack = 0
                 }
@@ -411,10 +428,10 @@ async function Envs() {
                 ydrTokenArr.push(item);
             });
         }
-        // else if (ydrToken.indexOf("\n") != -1) {
-        //     ydrToken.split("\n").forEach((item) => {
-        //         ydrTokenArr.push(item);
-        //     });
+            // else if (ydrToken.indexOf("\n") != -1) {
+            //     ydrToken.split("\n").forEach((item) => {
+            //         ydrTokenArr.push(item);
+            //     });
         // }
         else {
             ydrTokenArr.push(ydrToken);
