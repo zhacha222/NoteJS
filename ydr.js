@@ -1,13 +1,37 @@
 /**
  * 云达人 qpp
- * 抓包：开着抓包软件进入 云达人 qpp，抓 h5.jinghaojian.net 域名中 request header里的 uid和token，
- * 变量：ydrToken  多个账号 换行分割 或者 新建变量。 ydrToken填写 uid#token（token不要带前面的Bearer ）
- * 定时：一周一次（默认每周二早上8点执行一次）
+ * 定时：一天一次
  * cron: 15 8 * * *
  * github仓库：https://github.com/zhacha222/NoteJS
+ * 变量名称：ydrToken 多个账号在【环境变量】单独新建变量，。
+ * 变量值：{
+        "uid": "123456",
+        "Authorization": "xxxxxxxxx",
+        "video_sign": "xxxxxxxxx",
+        "market_sign": "xxxxxxxxx",
+        "article_sign": "xxxxxxxxx",
+        }
 
- 工作日志：
+ ***关于变量值中各参数的说明:
+     uid ———————————————————— h5.jinghaojian.net 包中 request header里的uid
+     Authorization —————————— h5.jinghaojian.net 包中 request header里的Authorization，不要带前面的Bearer
+     video_sign ————————————— 观看视频获得积分的sign
+     market_sign ———————————— 浏览二手市场获得积分的sign
+     article_sign ——————————— 浏览校园头条文章获得积分的sign
+
+ ***注意事项:
+ 1.只支持青龙，未适配圈x 
+ 2.脚本变量只推荐在青龙的【环境变量】页添加，有强迫症在【配置文件】config.sh中添加的如果出现问题自己解决
+ 3.支持多用户，每一用户在【环境变量】单独新建变量ydrToken，切勿一个变量内填写多个用户的参数
+ 4.变量中的所有符号都是 英文符号 ！！！
+ 5.脚本通知方式采用青龙面板默认通知，请在【配置文件】config.sh里配置
+ 6.浏览视频，二手市场，校园头条任务三者的sign需要各自单独抓，并不通用
+
+
+ ***工作日志：
  1.0.0 完成签到功能
+ 1.0.1 完成签到，浏览视频，二手市场，校园头条任务
+
 
  */
 //cron: 15 8 * * *
@@ -17,8 +41,8 @@
 const Notify = 0;
 
 //===============脚本版本=================//
-let scriptVersion = "1.0.0";
-let update_data = "1.0.0 签到";
+let scriptVersion = "1.0.1";
+let update_data = "1.0.1 完成签到，浏览视频，二手市场，校园头条任务";
 
 
 const $ = new Env('云达人');
@@ -27,13 +51,25 @@ const {log} = console;
 //////////////////////
 
 let scriptVersionLatest = "";
-//账号数据
+//青年大学习账号数据
 let ydrToken = ($.isNode() ? process.env.ydrToken : $.getdata("ydrToken")) || "";
 let ydrTokenArr = [];
 let token =``;
 let uid = ``;
 let doPunchIndata = ``;
-let msg =``;
+let data =``;
+let content =``;
+let Authorization =``;
+let video_sign =``;
+let market_sign =``;
+let article_sign =``;
+let detail_log =``;
+let detail_notice_log =``;
+let detailBack =``;
+let signInBack =``;
+let videoBack =``;
+let marketBack =``;
+let articleBack =``;
 
 
 !(async () => {
@@ -69,17 +105,49 @@ let msg =``;
                 }
                 log(`\n========= 开始【第 ${num} 个账号】=========\n`)
 
-                // token = ydrTokenArr[index];
-                uid = ydrTokenArr[index].split("#")[0];
-                token = ydrTokenArr[index].split("#")[1];
+                data = ydrTokenArr[index];
+                content = JSON.parse(data);
+                uid = content.uid;
+                Authorization = content.Authorization;
+                video_sign = content.video_sign;
+                market_sign = content.market_sign;
+                article_sign = content.article_sign;
 
-                //log(token)
-                doPunchIn()
+                detailBack = 0
+                await detail()
+                await $.wait(2 * 1000);
+                log(detail_log)
+                if (detailBack > 0) {
+                    signInBack = 0
+                    await signIn()
+                    await $.wait(2 * 1000);
+                    if (signInBack > 0) {
+                        videoBack = 0
+                        await video()
+                        await $.wait(2 * 1000);
+                        await video()
+                        await $.wait(2 * 1000);
+                        if (videoBack > 0) {
+                            marketBack = 1
+                            await market()
+                            await $.wait(2 * 1000);
+                            if (marketBack = 1) {
+                                await article()
+                                await $.wait(2 * 1000);
+                            }
 
-               // msg += `签到用户：${uid}\n签到情况：${doPunchIndata}\n\n`
+                        }
+
+                    }
+
+                }
+
+                await detail()
+                msg += `============= 账号${num} =============\n` + detail_notice_log + `\n`
             }
-
+            log(`\n\n============== 推送 ==============`)
             // log(msg);
+
             await SendMsg(msg);
         }
     }
@@ -90,29 +158,77 @@ let msg =``;
 
 
 
-
-
 /**
- * 签到
+ * 个人信息
  */
-function doPunchIn(timeout = 3 * 1000) {
+function detail(timeout = 3 * 1000) {
     return new Promise((resolve) => {
         let url = {
-            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/sign?uid=${uid}`,
+            url: `https://cloudman.jinghaojian.net/user/detail?uid=${uid}`,
             headers: {
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${Authorization}`
             },
             data: ``,
         }
 
         $.get(url, async (error, response, data) => {
             try {
-                let result = data == "undefined" ? await doPunchIn() : JSON.parse(data);
-                 doPunchIndata = result.msg
+                let result = data == "undefined" ? await detail() : JSON.parse(data);
+                if (result.code==200) {
+                    //log(`登录成功\n昵称:${result.nickname}\n手机号：${result.username}\n积分：${result.score}`)
+                    detail_log = `登录成功\n昵称:${result.nickname}\n手机号：${result.username}\n积分：${result.score}`
+                    detail_notice_log = `昵称:${result.nickname}\n手机号：${result.username}\n积分：${result.score}`
+                    detailBack = 1
+                } else if (result.code==A0001) {
+                    //log(result.msg)
+                    detail_log = `登录失败，` + decodeURI(result.msg)
+                    detail_notice_log = `登录失败，\n` + decodeURI(result.msg)
+                    detailBack = 0
+                } else if (result.code==A0003) {
+                    log(result.msg)
+                    detailBack = 0
+                } else {
+                    log(`登录失败，发生未知错误 ❌`)
+                    detailBack = 0
+                }
 
-                    log(data)
-                    //status_code=1
+            } catch (e) {
+                log(e)
+            } finally {
+                resolve();
+            }
+        }, timeout)
+    })
+}
 
+
+/**
+ * 签到
+ */
+function signIn(timeout = 3 * 1000) {
+    return new Promise((resolve) => {
+        let url = {
+            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/sign?uid=${uid}`,
+            headers: {
+                "Authorization": `Bearer ${Authorization}`
+            },
+            data: ``,
+        }
+
+        $.get(url, async (error, response, data) => {
+            try {
+                let result = data == "undefined" ? await signIn() : JSON.parse(data);
+               // {"code":"200","msg":"成功","data":{"score":25,"totalScore":165}}
+                if (result.code==200) {
+                    log(`签到成功，获得${result.data.score}积分`)
+                    signInBack = 1
+                } else if (result.code==A0100) { //重复签到
+                    log(result.msg)
+                    signInBack = 1
+                } else {
+                    log(`签到失败，发生未知错误 ❌`)
+                    signInBack = 0
+                }
 
             } catch (e) {
                 log(e)
@@ -125,24 +241,167 @@ function doPunchIn(timeout = 3 * 1000) {
 
 
 
-
-// ============================================重写============================================ \\
-async function GetRewrite() {
-    if ($request.url.indexOf("user/base") > -1) {
-        const ck = $request.headers.token;
-        if (ydrToken) {
-            if (ydrToken.indexOf(ck) == -1) {
-                ydrToken = ydrToken + "\n" + ck;
-                $.setdata(ydrToken, "ydrToken");
-                let List = ydrToken.split("\n");
-                $.msg(`【${$.name}】` + ` 获取第${List.length}个 ck 成功：${ck}`);
-            }
-        } else {
-            $.setdata(ck, "ydrToken");
-            $.msg(`【${$.name}】` + ` 获取第1个 ck 成功：${ck}`);
+/**
+ * 观看视频
+ */
+function video(timeout = 3 * 1000) {
+    return new Promise((resolve) => {
+        let url = {
+            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`;
+            headers: {
+                'Connection' : `keep-alive`,
+                'Accept-Encoding' : `gzip, deflate`,
+                'Sign' : `${video_sign}`,
+                'Content-Type' : `application/json;charset=utf-8`,
+                'Origin' : `http://h5.jinghaojian.net:8088`,
+                'User-Agent' : `Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Html5Plus/1.0`,
+                'Authorization': `Bearer ${Authorization}`,
+                'Host' : `h5.jinghaojian.net:8088`,
+                'Referer' : `http://h5.jinghaojian.net:8088/?uid=${uid}`,
+                'Accept-Language' : `zh-cn`,
+                'Accept' : `application/json, text/plain, */*`
+            },
+            body: `{"uid":"${uid}","type":8}`
         }
-    }
+
+        $.post(url, async (error, response, data) => {
+            try {
+                let result = data == "undefined" ? await video() : JSON.parse(data);
+                if (result.code==200) {
+                    log(`观看视频成功，获得30积分`)
+                    videoBack = 1
+                } else if (result.data.score==`null`) { //重复观看
+                    log(`今日已完成观看视频任务`)
+                    videoBack = 1
+                } else {
+                    log(`观看失败，发生未知错误 ❌`)
+                    videoBack = 0
+                }
+
+
+            } catch (e) {
+                log(e)
+            } finally {
+                resolve();
+            }
+        }, timeout)
+    })
 }
+
+
+/**
+ * 二手市场
+ */
+function market(timeout = 3 * 1000) {
+    return new Promise((resolve) => {
+        let url = {
+            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`;
+            headers: {
+                'Connection' : `keep-alive`,
+                'Accept-Encoding' : `gzip, deflate`,
+                'Sign' : `${market_sign}`,
+                'Content-Type' : `application/json;charset=utf-8`,
+                'Origin' : `http://h5.jinghaojian.net:8088`,
+                'User-Agent' : `Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Html5Plus/1.0`,
+                'Authorization': `Bearer ${Authorization}`,
+                'Host' : `h5.jinghaojian.net:8088`,
+                'Referer' : `http://h5.jinghaojian.net:8088/?uid=${uid}`,
+                'Accept-Language' : `zh-cn`,
+                'Accept' : `application/json, text/plain, */*`
+            },
+            body: `{"uid":"${uid}","type":6}`
+        }
+
+        $.post(url, async (error, response, data) => {
+            try {
+                let result = data == "undefined" ? await market() : JSON.parse(data);
+                if (result.code==200) {
+                    log(`浏览二手市场页面，获得10积分`)
+                    marketBack = 1
+                } else if (result.data.score==`null`) { //重复浏览
+                    log(`今日已浏览过二手市场页面`)
+                    marketBack = 1
+                } else {
+                    log(`浏览失败，发生未知错误 ❌`)
+                    marketBack = 0
+                }
+
+
+            } catch (e) {
+                log(e)
+            } finally {
+                resolve();
+            }
+        }, timeout)
+    })
+}
+
+
+/**
+ * 校园头条文章
+ */
+function article(timeout = 3 * 1000) {
+    return new Promise((resolve) => {
+        let url = {
+            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`;
+            headers: {
+                'Connection' : `keep-alive`,
+                'Accept-Encoding' : `gzip, deflate`,
+                'Sign' : `${article_sign}`,
+                'Content-Type' : `application/json;charset=utf-8`,
+                'Origin' : `http://h5.jinghaojian.net:8088`,
+                'User-Agent' : `Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Html5Plus/1.0`,
+                'Authorization': `Bearer ${Authorization}`,
+                'Host' : `h5.jinghaojian.net:8088`,
+                'Referer' : `http://h5.jinghaojian.net:8088/?uid=${uid}`,
+                'Accept-Language' : `zh-cn`,
+                'Accept' : `application/json, text/plain, */*`
+            },
+            body: `{"uid":"${uid}","type":7}`
+        }
+
+        $.post(url, async (error, response, data) => {
+            try {
+                let result = data == "undefined" ? await article() : JSON.parse(data);
+                if (result.code==200) {
+                    log(`浏览校园头条文章，获得10积分`)
+                    articleBack = 1
+                } else if (result.data.score==`null`) { //重复浏览
+                    log(`今日已浏览过校园头条文章`)
+                    articleBack = 1
+                } else {
+                    log(`浏览失败，发生未知错误 ❌`)
+                    articleBack = 0
+                }
+
+
+            } catch (e) {
+                log(e)
+            } finally {
+                resolve();
+            }
+        }, timeout)
+    })
+}
+
+//未适配圈x
+// // ============================================重写============================================ \\
+// async function GetRewrite() {
+//     if ($request.url.indexOf("user/base") > -1) {
+//         const ck = $request.headers.token;
+//         if (ydrToken) {
+//             if (ydrToken.indexOf(ck) == -1) {
+//                 ydrToken = ydrToken + "\n" + ck;
+//                 $.setdata(ydrToken, "ydrToken");
+//                 let List = ydrToken.split("\n");
+//                 $.msg(`【${$.name}】` + ` 获取第${List.length}个 ck 成功：${ck}`);
+//             }
+//         } else {
+//             $.setdata(ck, "ydrToken");
+//             $.msg(`【${$.name}】` + ` 获取第1个 ck 成功：${ck}`);
+//         }
+//     }
+// }
 
 // ============================================变量检查============================================ \\
 async function Envs() {
@@ -152,11 +411,11 @@ async function Envs() {
                 ydrTokenArr.push(item);
             });
         }
-        else if (ydrToken.indexOf("\n") != -1) {
-            ydrToken.split("\n").forEach((item) => {
-                ydrTokenArr.push(item);
-            });
-        }
+        // else if (ydrToken.indexOf("\n") != -1) {
+        //     ydrToken.split("\n").forEach((item) => {
+        //         ydrTokenArr.push(item);
+        //     });
+        // }
         else {
             ydrTokenArr.push(ydrToken);
         }
