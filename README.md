@@ -62,5 +62,44 @@ ql repo https://github.com/zhacha222/NoteJS.git
  hostname = newmapi.7mate.cn
  ```
 
+## 2.“云达人 qpp” 每日签到、观看视频，浏览二手市场，浏览校园头条文章得积分
 
+ #### 定时：`15 8 * * *`
+
+ #### 变量名称：`ydrToken` 多个账号在【环境变量】单独新建变量，
+ 
+ 
+ #### 变量值：
+ ```
+ {
+   "uid": "123456",
+   "Authorization": "xxxxxxxxx",
+   "video_sign": "xxxxxxxxx",
+   "market_sign": "xxxxxxxxx",
+   "article_sign": "xxxxxxxxx"
+   }
+```
+
+ #### 关于变量值中各参数的说明:
+ 
+ ```
+ uid ———————————————————— h5.jinghaojian.net 包中 request header里的uid
+ Authorization —————————— h5.jinghaojian.net 包中 request header里的Authorization，不要带前面的Bearer
+ video_sign ————————————— 观看视频获得积分的sign
+ market_sign ———————————— 获得积分的sign
+ article_sign ——————————— 获得积分的sign
+ ```
+ 
+ #### 注意事项:
+*  1.支持青龙和圈x，青龙在【环境变量】页添加变量，圈x在boxjs中手动添加变量
+ 
+*  2.青龙脚本变量只推荐在的【环境变量】页添加，有强迫症在【配置文件】config.sh中添加的如果出现问题自己解决
+ 
+*  3.支持多用户，每一用户在【环境变量】单独新建变量ydrToken，切勿一个变量内填写多个用户的参数
+ 
+*  4.变量中的所有符号都是 英文符号 ！！！
+ 
+*  5.脚本通知方式采用青龙面板默认通知，请在【配置文件】config.sh里配置
+ 
+*  6.浏览视频，二手市场，校园头条任务三者的sign需要各自单独抓，并不通用
 
