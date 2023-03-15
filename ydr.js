@@ -64,6 +64,7 @@ let article_sign =``;
 let detail_log =``;
 let detail_notice_log =``;
 let detailBack =``;
+let task_log =``;
 let msg =``;
 
 
@@ -112,8 +113,8 @@ let msg =``;
                 await $.wait(2 * 1000);
                 log(detail_log)
                 if (detailBack > 0) {
-                        await signIn()
-                        await $.wait(2 * 1000);
+                    await signIn()
+                    await $.wait(2 * 1000);
                     if (video_sign != ``) {
                         await video()
                         await $.wait(2 * 1000);
@@ -121,24 +122,27 @@ let msg =``;
                         await $.wait(2 * 1000);
                     }else{
                         log(`未填写video_sign，跳过观看视频任务`)
+                        task_log +=`未填写video_sign，跳过观看视频任务\n`
                     }
                     if (market_sign != ``) {
                         await market()
                         await $.wait(2 * 1000);
                     }else{
                         log(`未填写market_sign，跳过浏览二手市场任务`)
+                        task_log +=`未填写market_sign，跳过浏览二手市场任务\n`
                     }
                     if (article_sign != ``) {
                         await article()
                         await $.wait(2 * 1000);
                     }else{
                         log(`未填写article_sign，跳过浏览校园头条文章任务`)
+                        task_log +=`未填写article_sign，跳过浏览校园头条文章任务\n`
                     }
 
                 }
 
                 await detail()
-                msg += `============= 账号${num} =============\n` + detail_notice_log + `\n`
+                msg += `============= 账号${num} =============\n` + detail_notice_log + `\n` +task_log
             }
             log(`\n\n============== 推送 ==============`)
             // log(msg);
@@ -181,10 +185,12 @@ function detail(timeout = 3 * 1000) {
                     detail_notice_log = `登录失败，\n` + decodeURI(result.msg)
                     detailBack = 0
                 } else if (result.code==`A0003`) {
-                    log(result.msg)
+                    detail_log =result.msg
+                    detail_notice_log = result.msg
                     detailBack = 0
                 } else {
-                    log(`登录失败，发生未知错误 ❌`)
+                    detail_log=`登录失败，发生未知错误 ❌`
+                    detail_notice_log = `登录失败，发生未知错误 ❌`
                     detailBack = 0
                 }
 
@@ -216,16 +222,17 @@ function signIn(timeout = 3 * 1000) {
             try {
                 let result = data == "undefined" ? await signIn() : JSON.parse(data);
                 if (result.code==`A0100`) { //重复签到
-                    log(result.msg)
+                    log(`今日已签到`)
+                    task_log += `今日已签到` + `\n`
                     return;
                 }
 
                 if (result.code==200) {
                     log(`签到成功，获得${result.data.score}积分`)
-                }  else if (result.error) {
-                    log(`未填写sign或有误 ❌`)
-                }  else {
+                    task_log += `签到成功，获得${result.data.score}积分\n`
+                }else {
                     log(`签到失败，发生未知错误 ❌`)
+                    task_log +=`签到失败，发生未知错误 ❌\n`
                 }
 
             } catch (e) {
@@ -268,16 +275,20 @@ function video(timeout = 3 * 1000) {
                 let result = data == "undefined" ? await video() : JSON.parse(data);
                 if (result.error) {
                     log(`video_sign有误 ❌`)
+                    task_log += `video_sign有误 ❌\n`
                     return;
                 }
                 if (result.data.score==null) { //重复观看
                     log(`今日已完成观看视频任务`)
+                    task_log +=`今日已完成观看视频任务\n`
                     return;
                 }
                 if (result.code==200) {
                     log(`观看视频成功，获得30积分`)
+                    task_log +=`观看视频成功，获得30积分\n`
                 }  else {
                     log(`观看失败，发生未知错误 ❌`)
+                    task_log +=`观看失败，发生未知错误 ❌\n`
                 }
 
 
@@ -320,17 +331,21 @@ function market(timeout = 3 * 1000) {
                 let result = data == "undefined" ? await market() : JSON.parse(data);
                 if (result.error) {
                     log(`market_sign有误 ❌`)
+                    task_log +=`market_sign有误 ❌\n`
                     return;
                 }
                 if (result.data.score==null) { //重复浏览
                     log(`今日已浏览过二手市场页面`)
+                    task_log +=`今日已浏览过二手市场页面\n`
                     return;
                 }
 
                 if (result.code==200) {
                     log(`浏览二手市场页面，获得10积分`)
+                    task_log +=`浏览二手市场页面，获得10积分\n`
                 }else {
                     log(`浏览失败，发生未知错误 ❌`)
+                    task_log +=`浏览失败，发生未知错误 ❌\n`
                 }
 
 
@@ -373,16 +388,20 @@ function article(timeout = 3 * 1000) {
                 let result = data == "undefined" ? await article() : JSON.parse(data);
                 if (result.error) {
                     log(`article_sign有误 ❌`)
+                    task_log +=`article_sign有误 ❌`
                     return;
                 }
                 if (result.data.score==null) { //重复浏览
                     log(`今日已浏览过校园头条文章`)
+                    task_log +=`今日已浏览过校园头条文章`
                     return;
                 }
                 if (result.code==200) {
                     log(`浏览校园头条文章，获得10积分`)
+                    task_log +=`浏览校园头条文章，获得10积分`
                 }else {
                     log(`浏览失败，发生未知错误 ❌`)
+                    task_log +=`浏览失败，发生未知错误 ❌`
                 }
 
 
@@ -445,7 +464,7 @@ async function SendMsg(msg) {
     if (Notify > 0) {
         if ($.isNode()) {
             var notify = require('./sendNotify');
-            await notify.sendNotify($.name, msg+ `\n学习时间：${t()}\n`);
+            await notify.sendNotify($.name, msg+ `\n运行时间：${t()}\n`);
         } else {
             $.msg(msg);
         }
