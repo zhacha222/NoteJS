@@ -20,8 +20,8 @@
  article_sign ——————————— 浏览校园头条文章获得积分的sign
 
  ***注意事项:
- 1.只支持青龙，未适配圈x
- 2.脚本变量只推荐在青龙的【环境变量】页添加，有强迫症在【配置文件】config.sh中添加的如果出现问题自己解决
+ 1.支持青龙和圈x，青龙在【环境变量】页添加变量，圈x在boxjs中手动添加变量
+ 2.青龙脚本变量只推荐在的【环境变量】页添加，有强迫症在【配置文件】config.sh中添加的如果出现问题自己解决
  3.支持多用户，每一用户在【环境变量】单独新建变量ydrToken，切勿一个变量内填写多个用户的参数
  4.变量中的所有符号都是 英文符号 ！！！
  5.脚本通知方式采用青龙面板默认通知，请在【配置文件】config.sh里配置
@@ -38,7 +38,7 @@
 
 //===============通知设置=================//
 //0为关闭通知，1为打开通知,默认为1
-const Notify = 0;
+const Notify = 1;
 
 //===============脚本版本=================//
 let scriptVersion = "1.0.1";
@@ -54,9 +54,7 @@ let scriptVersionLatest = "";
 //青年大学习账号数据
 let ydrToken = ($.isNode() ? process.env.ydrToken : $.getdata("ydrToken")) || "";
 let ydrTokenArr = [];
-let token =``;
 let uid = ``;
-let doPunchIndata = ``;
 let data =``;
 let content =``;
 let Authorization =``;
@@ -66,10 +64,6 @@ let article_sign =``;
 let detail_log =``;
 let detail_notice_log =``;
 let detailBack =``;
-let signInBack =``;
-let videoBack =``;
-let marketBack =``;
-let articleBack =``;
 let msg =``;
 
 
@@ -113,32 +107,32 @@ let msg =``;
                 video_sign = content.video_sign;
                 market_sign = content.market_sign;
                 article_sign = content.article_sign;
-
                 detailBack = 0
                 await detail()
                 await $.wait(2 * 1000);
                 log(detail_log)
                 if (detailBack > 0) {
-                    signInBack = 0
-                    await signIn()
-                    await $.wait(2 * 1000);
-                    if (signInBack > 0) {
-                        videoBack = 0
+                        await signIn()
+                        await $.wait(2 * 1000);
+                    if (video_sign != ``) {
                         await video()
                         await $.wait(2 * 1000);
                         await video()
                         await $.wait(2 * 1000);
-                        if (videoBack > 0) {
-                            marketBack = 1
-                            await market()
-                            await $.wait(2 * 1000);
-                            if (marketBack = 1) {
-                                await article()
-                                await $.wait(2 * 1000);
-                            }
-
-                        }
-
+                    }else{
+                        log(`未填写video_sign，跳过观看视频任务`)
+                    }
+                    if (market_sign != ``) {
+                        await market()
+                        await $.wait(2 * 1000);
+                    }else{
+                        log(`未填写market_sign，跳过浏览二手市场任务`)
+                    }
+                    if (article_sign != ``) {
+                        await article()
+                        await $.wait(2 * 1000);
+                    }else{
+                        log(`未填写article_sign，跳过浏览校园头条文章任务`)
                     }
 
                 }
@@ -218,22 +212,20 @@ function signIn(timeout = 3 * 1000) {
         }
 
         $.get(url, async (error, response, data) => {
-            log(data)
+            //log(data)
             try {
                 let result = data == "undefined" ? await signIn() : JSON.parse(data);
-                // {"code":"200","msg":"成功","data":{"score":25,"totalScore":165}}
                 if (result.code==`A0100`) { //重复签到
                     log(result.msg)
-                    signInBack = 1
                     return;
                 }
 
                 if (result.code==200) {
                     log(`签到成功，获得${result.data.score}积分`)
-                    signInBack = 1
-                }else {
+                }  else if (result.error) {
+                    log(`未填写sign或有误 ❌`)
+                }  else {
                     log(`签到失败，发生未知错误 ❌`)
-                    signInBack = 0
                 }
 
             } catch (e) {
@@ -271,21 +263,21 @@ function video(timeout = 3 * 1000) {
         }
 
         $.post(url, async (error, response, data) => {
-            log(data)
+            //log(data)
             try {
                 let result = data == "undefined" ? await video() : JSON.parse(data);
-                if (result.data.score==null) { //重复观看
-                    log(`今日已完成观看视频任务`)
-                    videoBack = 1
+                if (result.error) {
+                    log(`video_sign有误 ❌`)
                     return;
                 }
-
+                if (result.data.score==null) { //重复观看
+                    log(`今日已完成观看视频任务`)
+                    return;
+                }
                 if (result.code==200) {
                     log(`观看视频成功，获得30积分`)
-                    videoBack = 1
                 }  else {
                     log(`观看失败，发生未知错误 ❌`)
-                    videoBack = 0
                 }
 
 
@@ -323,21 +315,22 @@ function market(timeout = 3 * 1000) {
         }
 
         $.post(url, async (error, response, data) => {
-            log(data)
+            //log(data)
             try {
                 let result = data == "undefined" ? await market() : JSON.parse(data);
+                if (result.error) {
+                    log(`market_sign有误 ❌`)
+                    return;
+                }
                 if (result.data.score==null) { //重复浏览
                     log(`今日已浏览过二手市场页面`)
-                    marketBack = 1
                     return;
                 }
 
                 if (result.code==200) {
                     log(`浏览二手市场页面，获得10积分`)
-                    marketBack = 1
-                } else {
+                }else {
                     log(`浏览失败，发生未知错误 ❌`)
-                    marketBack = 0
                 }
 
 
@@ -375,20 +368,21 @@ function article(timeout = 3 * 1000) {
         }
 
         $.post(url, async (error, response, data) => {
-            log(data)
+            //log(data)
             try {
                 let result = data == "undefined" ? await article() : JSON.parse(data);
+                if (result.error) {
+                    log(`article_sign有误 ❌`)
+                    return;
+                }
                 if (result.data.score==null) { //重复浏览
                     log(`今日已浏览过校园头条文章`)
-                    articleBack = 1
                     return;
                 }
                 if (result.code==200) {
                     log(`浏览校园头条文章，获得10积分`)
-                    articleBack = 1
-                }  else {
+                }else {
                     log(`浏览失败，发生未知错误 ❌`)
-                    articleBack = 0
                 }
 
 
@@ -401,7 +395,7 @@ function article(timeout = 3 * 1000) {
     })
 }
 
-//未适配圈x
+//未适配圈x重写
 // // ============================================重写============================================ \\
 // async function GetRewrite() {
 //     if ($request.url.indexOf("user/base") > -1) {
