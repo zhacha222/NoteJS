@@ -86,8 +86,8 @@ ql repo https://github.com/zhacha222/NoteJS.git
  uid ———————————————————— h5.jinghaojian.net 包中 request header里的uid
  Authorization —————————— h5.jinghaojian.net 包中 request header里的Authorization，不要带前面的Bearer
  video_sign ————————————— 观看视频获得积分的sign
- market_sign ———————————— 获得积分的sign
- article_sign ——————————— 获得积分的sign
+ market_sign ———————————— 浏览二手市场获得积分的sign
+ article_sign ——————————— 浏览校园头条文章获得积分的sign
  
  三条sign必须各自单独抓，
  url都是 http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore
