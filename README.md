@@ -88,6 +88,11 @@ ql repo https://github.com/zhacha222/NoteJS.git
  video_sign ————————————— 观看视频获得积分的sign
  market_sign ———————————— 获得积分的sign
  article_sign ——————————— 获得积分的sign
+ 
+ 三条sign必须各自单独抓，
+ url都是 http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore
+ 区别是请求body里面的type不同，6是二手市场，7是头条文章，8是观看视频，注意区分！
+ sign就在请求hearder里面
  ```
  
  #### 注意事项:
