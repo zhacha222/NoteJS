@@ -18,12 +18,12 @@
  video_sign ————————————— 观看视频获得积分的sign
  market_sign ———————————— 浏览二手市场获得积分的sign
  article_sign ——————————— 浏览校园头条文章获得积分的sign
- 
-  三条sign必须各自单独抓，
+
+ 三条sign必须各自单独抓，
  url都是 http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore
  区别是请求body里面的type不同，6是二手市场，7是头条文章，8是观看视频，注意区分！
  sign就在包中的请求hearder里面
- 
+
 
  ***注意事项:
  1.支持青龙和圈x，青龙在【环境变量】页添加变量，圈x在boxjs中手动添加变量
@@ -38,6 +38,7 @@
  1.0.0 完成签到功能
  1.0.1 完成签到，浏览视频，二手市场，校园头条任务
  1.0.2 修复推送日志模板混乱
+ 1.0.3 增加黑号提醒
 
  */
 //cron: 15 8 * * *
@@ -47,8 +48,8 @@
 const Notify = 1;
 
 //===============脚本版本=================//
-let scriptVersion = "1.0.2";
-let update_data = "1.0.2 修复推送日志模板混乱";
+let scriptVersion = "1.0.3";
+let update_data = "1.0.3 增加黑号提醒";
 
 
 const $ = new Env('云达人');
@@ -57,7 +58,7 @@ const {log} = console;
 //////////////////////
 
 let scriptVersionLatest = "";
-//青年大学习账号数据
+//云达人账号数据
 let ydrToken = ($.isNode() ? process.env.ydrToken : $.getdata("ydrToken")) || "";
 let ydrTokenArr = [];
 let uid = ``;
@@ -283,16 +284,19 @@ function video(timeout = 3 * 1000) {
                     log(`video_sign有误 ❌`)
                     task_log += `video_sign有误 ❌\n`
                     return;
-                }
-                if (result.data.score==null) { //重复观看
-                    log(`今日已完成观看视频任务`)
-                    task_log +=`今日已完成观看视频任务\n`
-                    return;
-                }
-                if (result.code==200) {
-                    log(`观看视频成功，获得30积分`)
-                    task_log +=`观看视频成功，获得30积分\n`
-                }  else {
+                }else if (result.code==200) {
+                    if (result.data.score==null) { //重复观看
+                        log(`今日已完成观看视频任务`)
+                        task_log +=`今日已完成观看视频任务\n`
+                        return;
+                    }else {
+                        log(`观看视频成功，获得30积分`)
+                        task_log += `观看视频成功，获得30积分\n`
+                    }
+                }else if (result.code==400) {
+                    log(`game over!可能号黑了 ❌`)
+                    task_log +=`game over!可能号黑了 ❌\n`
+                }else {
                     log(`观看失败，发生未知错误 ❌`)
                     task_log +=`观看失败，发生未知错误 ❌\n`
                 }
@@ -339,16 +343,18 @@ function market(timeout = 3 * 1000) {
                     log(`market_sign有误 ❌`)
                     task_log +=`market_sign有误 ❌\n`
                     return;
-                }
-                if (result.data.score==null) { //重复浏览
-                    log(`今日已浏览过二手市场页面`)
-                    task_log +=`今日已浏览过二手市场页面\n`
-                    return;
-                }
-
-                if (result.code==200) {
-                    log(`浏览二手市场页面，获得10积分`)
-                    task_log +=`浏览二手市场页面，获得10积分\n`
+                }else if (result.code==200) {
+                    if (result.data.score==null) { //重复观看
+                        log(`今日已浏览过二手市场页面`)
+                        task_log +=`今日已浏览过二手市场页面\n`
+                        return;
+                    }else {
+                        log(`浏览二手市场页面，获得10积分`)
+                        task_log +=`浏览二手市场页面，获得10积分\n`
+                    }
+                }else if (result.code==400) {
+                    log(`game over!可能号黑了 ❌`)
+                    task_log +=`game over!可能号黑了 ❌\n`
                 }else {
                     log(`浏览失败，发生未知错误 ❌`)
                     task_log +=`浏览失败，发生未知错误 ❌\n`
@@ -396,15 +402,18 @@ function article(timeout = 3 * 1000) {
                     log(`article_sign有误 ❌`)
                     task_log +=`article_sign有误 ❌`
                     return;
-                }
-                if (result.data.score==null) { //重复浏览
-                    log(`今日已浏览过校园头条文章`)
-                    task_log +=`今日已浏览过校园头条文章`
-                    return;
-                }
-                if (result.code==200) {
-                    log(`浏览校园头条文章，获得10积分`)
-                    task_log +=`浏览校园头条文章，获得10积分`
+                }else if (result.code==200) {
+                    if (result.data.score==null) { //重复观看
+                        log(`今日已浏览过校园头条文章`)
+                        task_log +=`今日已浏览过校园头条文章`
+                        return;
+                    }else {
+                        log(`浏览校园头条文章，获得10积分`)
+                        task_log +=`浏览校园头条文章，获得10积分`
+                    }
+                }else if (result.code==400) {
+                    log(`game over!可能号黑了 ❌`)
+                    task_log +=`game over!可能号黑了 ❌\n`
                 }else {
                     log(`浏览失败，发生未知错误 ❌`)
                     task_log +=`浏览失败，发生未知错误 ❌`
