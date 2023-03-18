@@ -71,9 +71,10 @@ ql repo https://github.com/zhacha222/NoteJS.git
  
  #### 变量值：
  ```
- {
+{
    "uid": "123456",
    "Authorization": "xxxxxxxxx",
+   "signin_video_sign": "xxxxxxxxx",
    "video_sign": "xxxxxxxxx",
    "market_sign": "xxxxxxxxx",
    "article_sign": "xxxxxxxxx"
@@ -85,14 +86,15 @@ ql repo https://github.com/zhacha222/NoteJS.git
  ```
  uid ———————————————————— h5.jinghaojian.net 包中 request header里的uid
  Authorization —————————— h5.jinghaojian.net 包中 request header里的Authorization，不要带前面的Bearer
+ signin_video_sign —————— 通过观看视频获得双倍签到积分的sign，手动签到后等一会就会弹出来弹窗
  video_sign ————————————— 观看视频获得积分的sign
  market_sign ———————————— 浏览二手市场获得积分的sign
  article_sign ——————————— 浏览校园头条文章获得积分的sign
  
- 三条sign必须各自单独抓，
+ 四条sign必须各自单独抓，
  url都是 http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore
- 区别是请求body里面的type不同，6是二手市场，7是头条文章，8是观看视频，注意区分！
- sign就在请求hearder里面
+ 区别是请求body里面的type不同，5是观看视频获取双倍签到积分，6是二手市场，7是头条文章，8是观看视频，注意区分！
+ sign就在包中的请求hearder里面
  ```
  
  #### 注意事项:
