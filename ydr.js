@@ -42,6 +42,7 @@
  1.0.2 修复推送日志模板混乱
  1.0.3 增加黑号提醒
  1.0.4 优化逻辑，已完成的任务不再运行，避免黑号！！！ 增加观看视频获得双倍签到积分任务
+ 1.0.5 修复多账号任务列表日志重复错误
 
  */
 //cron: 15 8 * * *
@@ -51,8 +52,8 @@
 const Notify = 1;
 
 //===============脚本版本=================//
-let scriptVersion = "1.0.4";
-let update_data = " 1.0.4 优化逻辑，已完成的任务不再运行，避免黑号！！！ 增加观看视频获得双倍签到积分任务";
+let scriptVersion = "1.0.5";
+let update_data =  1.0.5 修复多账号任务列表日志重复错误";
 
 
 const $ = new Env('云达人');
@@ -118,6 +119,7 @@ let articlecount =``;
                 }
                 log(`\n========= 开始【第 ${num} 个账号】=========\n`)
                 task_log = ``
+                benefits_log = ``
                 data = ydrTokenArr[index];
                 content = JSON.parse(data);
                 uid = content.uid;
