@@ -7,6 +7,7 @@
  * 变量值：{
         "uid": "123456",
         "Authorization": "xxxxxxxxx",
+        "signin_video_sign": "xxxxxxxxx",
         "video_sign": "xxxxxxxxx",
         "market_sign": "xxxxxxxxx",
         "article_sign": "xxxxxxxxx"
@@ -15,13 +16,14 @@
  ***关于变量值中各参数的说明:
  uid ———————————————————— h5.jinghaojian.net 包中 request header里的uid
  Authorization —————————— h5.jinghaojian.net 包中 request header里的Authorization，不要带前面的Bearer
+ signin_video_sign —————— 通过观看视频获得双倍签到积分的sign，手动签到后等一会就会弹出来弹窗
  video_sign ————————————— 观看视频获得积分的sign
  market_sign ———————————— 浏览二手市场获得积分的sign
  article_sign ——————————— 浏览校园头条文章获得积分的sign
 
- 三条sign必须各自单独抓，
+ 四条sign必须各自单独抓，
  url都是 http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore
- 区别是请求body里面的type不同，6是二手市场，7是头条文章，8是观看视频，注意区分！
+ 区别是请求body里面的type不同，5是观看视频获取双倍签到积分，6是二手市场，7是头条文章，8是观看视频，注意区分！
  sign就在包中的请求hearder里面
 
 
@@ -39,6 +41,7 @@
  1.0.1 完成签到，浏览视频，二手市场，校园头条任务
  1.0.2 修复推送日志模板混乱
  1.0.3 增加黑号提醒
+ 1.0.4 优化逻辑，已完成的任务不再运行，避免黑号！！！ 增加观看视频获得双倍签到积分任务
 
  */
 //cron: 15 8 * * *
@@ -48,8 +51,8 @@
 const Notify = 1;
 
 //===============脚本版本=================//
-let scriptVersion = "1.0.3";
-let update_data = "1.0.3 增加黑号提醒";
+let scriptVersion = "1.0.4";
+let update_data = " 1.0.4 优化逻辑，已完成的任务不再运行，避免黑号！！！ 增加观看视频获得双倍签到积分任务";
 
 
 const $ = new Env('云达人');
@@ -65,14 +68,21 @@ let uid = ``;
 let data =``;
 let content =``;
 let Authorization =``;
+let signin_video_sign =``;
 let video_sign =``;
 let market_sign =``;
 let article_sign =``;
 let detail_log =``;
+let last_log =``;
 let detail_notice_log =``;
 let detailBack =``;
 let task_log =``;
+let benefits_log =``;
 let msg =``;
+let videocount =``;
+let marketcount =``;
+let articlecount =``;
+
 
 
 !(async () => {
@@ -112,6 +122,7 @@ let msg =``;
                 content = JSON.parse(data);
                 uid = content.uid;
                 Authorization = content.Authorization;
+                signin_video_sign = content.signin_video_sign;
                 video_sign = content.video_sign;
                 market_sign = content.market_sign;
                 article_sign = content.article_sign;
@@ -120,35 +131,62 @@ let msg =``;
                 await $.wait(2 * 1000);
                 log(detail_log)
                 if (detailBack > 0) {
-                    await signIn()
+                    await benefits()
                     await $.wait(2 * 1000);
+                    log(benefits_log)
+                    //log(videocount+marketcount+articlecount)
+                    log(`---------- 去做任务 ----------`)
+                    await signIn()
+                    await $.wait(3 * 1000);
+                    //观看视频
                     if (video_sign != ``) {
-                        await video()
-                        await $.wait(2 * 1000);
-                        await video()
-                        await $.wait(2 * 1000);
+                        if (videocount == 2) {
+                            await video()
+                            await $.wait(2 * 1000);
+                            await video()
+                            await $.wait(2 * 1000);
+                        } else if (videocount == 1) {
+                            await video()
+                            await $.wait(2 * 1000);
+                        } else {
+                            log(`今日已完成观看视频任务`)
+                        }
                     }else{
                         log(`未填写video_sign，跳过观看视频任务`)
                         task_log +=`未填写video_sign，跳过观看视频任务\n`
                     }
+
+                    //浏览二手市场页面
                     if (market_sign != ``) {
-                        await market()
-                        await $.wait(2 * 1000);
+                        if (marketcount == 1) {
+                            await market()
+                            await $.wait(2 * 1000);
+                        } else {
+                            log(`今日已浏览过二手市场页面`)
+                        }
                     }else{
                         log(`未填写market_sign，跳过浏览二手市场任务`)
                         task_log +=`未填写market_sign，跳过浏览二手市场任务\n`
                     }
+
+                    //浏览校园头条文章
                     if (article_sign != ``) {
-                        await article()
-                        await $.wait(2 * 1000);
+                        if (articlecount == 1) {
+                            await article()
+                            await $.wait(2 * 1000);
+                        } else {
+                            log(`今日已浏览过校园头条文章`)
+                        }
                     }else{
                         log(`未填写article_sign，跳过浏览校园头条文章任务`)
                         task_log +=`未填写article_sign，跳过浏览校园头条文章任务\n`
                     }
 
+
                 }
 
                 await detail()
+                log(`------------ 积分 ------------\n`+last_log)
                 msg += `============= 账号${num} =============\n` + detail_notice_log + `\n` +task_log+ `\n`
             }
             log(`\n\n============== 推送 ==============`)
@@ -185,6 +223,7 @@ function detail(timeout = 3 * 1000) {
                     //log(`登录成功\n昵称:${result.nickname}\n手机号：${result.username}\n积分：${result.score}`)
                     detail_log = `登录成功\n昵称:${result.data.nickname}\n手机号：${result.data.username}\n积分：${result.data.score}`
                     detail_notice_log = `昵称:${result.data.nickname}\n手机号：${result.data.username}\n积分：${result.data.score}`
+                    last_log = `手机号：${result.data.username}\n积分：${result.data.score}`
                     detailBack = 1
                 } else if (result.code==`A0001`) {
                     //log(result.msg)
@@ -199,6 +238,85 @@ function detail(timeout = 3 * 1000) {
                     detail_log=`登录失败，发生未知错误 ❌`
                     detail_notice_log = `登录失败，发生未知错误 ❌`
                     detailBack = 0
+                }
+
+            } catch (e) {
+                log(e)
+            } finally {
+                resolve();
+            }
+        }, timeout)
+    })
+}
+
+
+/**
+ * 任务列表
+ */
+function benefits(timeout = 3 * 1000) {
+    return new Promise((resolve) => {
+        let url = {
+            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/h5/benefits?uid=${uid}`,
+            headers: {
+                "Authorization": `Bearer ${Authorization}`
+            },
+            data: ``,
+        }
+
+        $.get(url, async (error, response, data) => {
+            //log(data)
+            try {
+                let result = data == "undefined" ? await detail() : JSON.parse(data);
+                if (result.code==200) {
+
+                    //观看视频
+                    if(result.data[0].flag==false) {
+                        if(result.data[0].count==0) {
+                            benefits_log += `---------- 任务列表 ----------\n签到\n看视频获得签到双倍积分\n观看视频 -- 0/2，未完成\n`
+                            videocount=2
+                        }else if(result.data[0].count==1) {
+                            benefits_log += `---------- 任务列表 ----------\n签到\n看视频获得签到双倍积分\n观看视频 -- 1/2，未完成\n`
+                            videocount=1
+                        }else{
+                            benefits_log += `---------- 任务列表 ----------\n获取失败，发生未知错误 ❌\n`
+                            videocount=0
+                        }
+                    }else if (result.data[0].flag==true) {
+                        benefits_log += `---------- 任务列表 ----------\n签到\n看视频获得签到双倍积分\n观看视频 -- 2/2，已完成\n`
+                        videocount=0
+                    }else{
+                        benefits_log += `获取失败，发生未知错误 ❌\n`
+                        videocount=0
+                    }
+
+
+                    //浏览二手市场页面
+                    if(result.data[1].flag==false) {
+                        benefits_log += `浏览二手市场页面 -- 0/1，未完成\n`
+                        marketcount=1
+                    }else if (result.data[1].flag==true) {
+                        benefits_log += `浏览二手市场页面 -- 1/1，已完成\n`
+                        marketcount=0
+                    }else{
+                        benefits_log += `获取失败，发生未知错误 ❌\n`
+                        marketcount=0
+                    }
+
+                    //浏览校园头条文章
+                    if(result.data[2].flag==false) {
+                        benefits_log += `浏览校园头条文章 -- 0/1，未完成\n`
+                        articlecount=1
+                    }else if (result.data[2].flag==true) {
+                        benefits_log += `浏览校园头条文章 -- 1/1，已完成\n`
+                        articlecount=0
+                    }else{
+                        benefits_log += `获取失败，发生未知错误 ❌\n`
+                        articlecount=0
+                    }
+
+
+                }else {
+                    benefits_log=`获取失败，发生未知错误 ❌`
                 }
 
             } catch (e) {
@@ -232,11 +350,16 @@ function signIn(timeout = 3 * 1000) {
                     log(`今日已签到`)
                     task_log += `今日已签到` + `\n`
                     return;
-                }
-
-                if (result.code==200) {
+                }else if (result.code==200) {
                     log(`签到成功，获得${result.data.score}积分`)
                     task_log += `签到成功，获得${result.data.score}积分\n`
+                    if (video_sign != ``) {
+                        signIn_video()
+                        signIn_video()
+                    }else{
+                        log(`未填写signin_video_sign，跳过看视频获得签到双倍积分任务`)
+                        task_log +=`未填写signin_video_sign，跳过看视频获得签到双倍积分任务\n`
+                    }
                 }else {
                     log(`签到失败，发生未知错误 ❌`)
                     task_log +=`签到失败，发生未知错误 ❌\n`
@@ -252,9 +375,67 @@ function signIn(timeout = 3 * 1000) {
 }
 
 
+/**
+ * 签到看视频获得双倍积分 type=5
+ */
+function signIn_video(timeout = 3 * 1000) {
+    return new Promise((resolve) => {
+        let url = {
+            url: `http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore`,
+            headers: {
+                'Connection' : `keep-alive`,
+                'Accept-Encoding' : `gzip, deflate`,
+                'Sign' : `${signin_video_sign}`,
+                'Content-Type' : `application/json;charset=utf-8`,
+                'Origin' : `http://h5.jinghaojian.net:8088`,
+                'User-Agent' : `Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Html5Plus/1.0`,
+                'Authorization': `Bearer ${Authorization}`,
+                'Host' : `h5.jinghaojian.net:8088`,
+                'Referer' : `http://h5.jinghaojian.net:8088/?uid=${uid}`,
+                'Accept-Language' : `zh-cn`,
+                'Accept' : `application/json, text/plain, */*`
+            },
+            body: `{"uid":"${uid}","type":5}`
+        }
+
+        $.post(url, async (error, response, data) => {
+            //log(data)
+            try {
+                let result = data == "undefined" ? await video() : JSON.parse(data);
+                if (result.error) {
+                    log(`signin_video_sign有误 ❌`)
+                    task_log += `signin_video_sign有误 ❌\n`
+                    return;
+                }else if (result.code==200) {
+                    if (result.data.score==null) { //重复观看
+                        log(`今日已完成签到看视频双倍积分任务`)
+                        task_log +=`今日已完成签到看视频双倍积分任务\n`
+                        return;
+                    }else {
+                        log(`观看视频成功，获得双倍积分`)
+                        task_log += `观看视频成功，获得双倍积分\n`
+                    }
+                }else if (result.code==400) {
+                    log(`game over!可能号黑了 ❌`)
+                    task_log +=`game over!可能号黑了 ❌\n`
+                }else {
+                    log(`观看失败，发生未知错误 ❌`)
+                    task_log +=`观看失败，发生未知错误 ❌\n`
+                }
+
+
+            } catch (e) {
+                log(e)
+            } finally {
+                resolve();
+            }
+        }, timeout)
+    })
+}
+
 
 /**
- * 观看视频
+ * 观看视频 type=8
  */
 function video(timeout = 3 * 1000) {
     return new Promise((resolve) => {
@@ -313,7 +494,7 @@ function video(timeout = 3 * 1000) {
 
 
 /**
- * 二手市场
+ * 二手市场 type=6
  */
 function market(timeout = 3 * 1000) {
     return new Promise((resolve) => {
@@ -372,7 +553,7 @@ function market(timeout = 3 * 1000) {
 
 
 /**
- * 校园头条文章
+ * 校园头条文章 type=7
  */
 function article(timeout = 3 * 1000) {
     return new Promise((resolve) => {
