@@ -53,7 +53,7 @@ const Notify = 1;
 
 //===============脚本版本=================//
 let scriptVersion = "1.0.5";
-let update_data =  1.0.5 修复多账号任务列表日志重复错误";
+let update_data = "1.0.5 修复多账号任务列表日志重复错误";
 
 
 const $ = new Env('云达人');
