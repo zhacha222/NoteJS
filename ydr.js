@@ -86,7 +86,6 @@ let marketcount =``;
 let articlecount =``;
 
 
-
 !(async () => {
     if (typeof $request !== "undefined") {
         await GetRewrite();
