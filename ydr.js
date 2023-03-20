@@ -25,6 +25,8 @@
  url都是 http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore
  区别是请求body里面的type不同，5是观看视频获取双倍签到积分，6是二手市场，7是头条文章，8是观看视频，注意区分！
  sign就在包中的请求hearder里面
+ 
+ 目前来看，抓包一次永不过期，如果黑号了第二天就会自动恢复！！！
 
 
  ***注意事项:
@@ -355,7 +357,7 @@ function signIn(timeout = 3 * 1000) {
                 }else if (result.code==200) {
                     log(`签到成功，获得${result.data.score}积分`)
                     task_log += `签到成功，获得${result.data.score}积分\n`
-                    if (signin_video_sign != ``) {
+                    if (!signin_video_sign || signin_video_sign != ``) {
                         signIn_video()
                         //signIn_video()
                     }else{
