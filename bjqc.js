@@ -19,10 +19,10 @@ https://beijing-gateway-customer.app-prod.bjev.com.cn/beijing-zone-member/userCu
 hostname = beijing-gateway-customer.app-prod.bjev.com.cn
 
 定时：一天一次
-cron: 5 7, * * *
+cron: 5 7 * * *
 const $ = new Env("北京汽车")
 */
-//cron: 5 7, * * *
+//cron: 5 7 * * *
 
 //===============通知设置=================//
 //0为关闭通知，1为打开通知,默认为1
