@@ -20,10 +20,8 @@ hostname = beijing-gateway-customer.app-prod.bjev.com.cn
 
 定时：一天一次
 cron: 5 7, * * *
-
 const $ = new Env("北京汽车")
 */
-
 //cron: 5 7, * * *
 
 //===============通知设置=================//
