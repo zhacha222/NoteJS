@@ -1,4 +1,5 @@
 /**
+脚本已寄，需要签名参数，暂时没空解决
  * 云达人 qpp
  * 定时：一天一次
  * cron: 15 8 * * *
@@ -25,7 +26,7 @@
  url都是 http://h5.jinghaojian.net:8088/jfapi/mall/sign/v2/addScore
  区别是请求body里面的type不同，5是观看视频获取双倍签到积分，6是二手市场，7是头条文章，8是观看视频，注意区分！
  sign就在包中的请求hearder里面
- 
+
  目前来看，抓包一次永不过期，如果黑号了第二天就会自动恢复！！！
 
 
@@ -112,91 +113,91 @@ let articlecount =``;
 
 
             for (let index = 0; index < ydrTokenArr.length; index++) {
+log(`脚本已寄，需要签名参数，暂时没空解决`)
 
-
-                let num = index + 1
-                if (num >1){
-                    log('**********休息15s，防止黑IP**********');
-                    await $.wait(15 * 1000);
-                }
-                log(`\n========= 开始【第 ${num} 个账号】=========\n`)
-                task_log = ``
-                benefits_log = ``
-                data = ydrTokenArr[index];
-                content = JSON.parse(data);
-                uid = content.uid;
-                Authorization = content.Authorization;
-                signin_video_sign = content.signin_video_sign;
-                video_sign = content.video_sign;
-                market_sign = content.market_sign;
-                article_sign = content.article_sign;
-                detailBack = 0
-                await detail()
-                await $.wait(2 * 1000);
-                log(detail_log)
-                if (detailBack > 0) {
-                    await benefits()
-                    await $.wait(2 * 1000);
-                    log(benefits_log)
-                    //log(videocount+marketcount+articlecount)
-                    log(`---------- 去做任务 ----------`)
-                    await signIn()
-                    await $.wait(3 * 1000);
-                    //观看视频
-                    if (video_sign != ``) {
-                        if (videocount == 2) {
-                            await video()
-                            await $.wait(2 * 1000);
-                            await video()
-                            await $.wait(2 * 1000);
-                        } else if (videocount == 1) {
-                            await video()
-                            await $.wait(2 * 1000);
-                        } else {
-                            log(`今日已完成观看视频任务`)
-                        }
-                    }else{
-                        log(`未填写video_sign，跳过观看视频任务`)
-                        task_log +=`未填写video_sign，跳过观看视频任务\n`
-                    }
-
-                    //浏览二手市场页面
-                    if (market_sign != ``) {
-                        if (marketcount == 1) {
-                            await market()
-                            await $.wait(2 * 1000);
-                        } else {
-                            log(`今日已浏览过二手市场页面`)
-                        }
-                    }else{
-                        log(`未填写market_sign，跳过浏览二手市场任务`)
-                        task_log +=`未填写market_sign，跳过浏览二手市场任务\n`
-                    }
-
-                    //浏览校园头条文章
-                    if (article_sign != ``) {
-                        if (articlecount == 1) {
-                            await article()
-                            await $.wait(2 * 1000);
-                        } else {
-                            log(`今日已浏览过校园头条文章`)
-                        }
-                    }else{
-                        log(`未填写article_sign，跳过浏览校园头条文章任务`)
-                        task_log +=`未填写article_sign，跳过浏览校园头条文章任务\n`
-                    }
-
-
-                }
-
-                await detail()
-                log(`------------ 积分 ------------\n`+last_log)
-                msg += `============= 账号${num} =============\n` + detail_notice_log + `\n` +task_log+ `\n`
+                // let num = index + 1
+                // if (num >1){
+                //     log('**********休息15s，防止黑IP**********');
+                //     await $.wait(15 * 1000);
+                // }
+                // log(`\n========= 开始【第 ${num} 个账号】=========\n`)
+                // task_log = ``
+                // benefits_log = ``
+                // data = ydrTokenArr[index];
+                // content = JSON.parse(data);
+                // uid = content.uid;
+                // Authorization = content.Authorization;
+                // signin_video_sign = content.signin_video_sign;
+                // video_sign = content.video_sign;
+                // market_sign = content.market_sign;
+                // article_sign = content.article_sign;
+                // detailBack = 0
+                // await detail()
+                // await $.wait(2 * 1000);
+                // log(detail_log)
+                // if (detailBack > 0) {
+                //     await benefits()
+                //     await $.wait(2 * 1000);
+                //     log(benefits_log)
+                //     //log(videocount+marketcount+articlecount)
+                //     log(`---------- 去做任务 ----------`)
+                //     await signIn()
+                //     await $.wait(3 * 1000);
+                //     //观看视频
+                //     if (video_sign != ``) {
+                //         if (videocount == 2) {
+                //             await video()
+                //             await $.wait(2 * 1000);
+                //             await video()
+                //             await $.wait(2 * 1000);
+                //         } else if (videocount == 1) {
+                //             await video()
+                //             await $.wait(2 * 1000);
+                //         } else {
+                //             log(`今日已完成观看视频任务`)
+                //         }
+                //     }else{
+                //         log(`未填写video_sign，跳过观看视频任务`)
+                //         task_log +=`未填写video_sign，跳过观看视频任务\n`
+                //     }
+                //
+                //     //浏览二手市场页面
+                //     if (market_sign != ``) {
+                //         if (marketcount == 1) {
+                //             await market()
+                //             await $.wait(2 * 1000);
+                //         } else {
+                //             log(`今日已浏览过二手市场页面`)
+                //         }
+                //     }else{
+                //         log(`未填写market_sign，跳过浏览二手市场任务`)
+                //         task_log +=`未填写market_sign，跳过浏览二手市场任务\n`
+                //     }
+                //
+                //     //浏览校园头条文章
+                //     if (article_sign != ``) {
+                //         if (articlecount == 1) {
+                //             await article()
+                //             await $.wait(2 * 1000);
+                //         } else {
+                //             log(`今日已浏览过校园头条文章`)
+                //         }
+                //     }else{
+                //         log(`未填写article_sign，跳过浏览校园头条文章任务`)
+                //         task_log +=`未填写article_sign，跳过浏览校园头条文章任务\n`
+                //     }
+                //
+                //
+                // }
+                //
+                // await detail()
+                // log(`------------ 积分 ------------\n`+last_log)
+                // msg += `============= 账号${num} =============\n` + detail_notice_log + `\n` +task_log+ `\n`
             }
-            log(`\n\n============== 推送 ==============`)
-            // log(msg);
-
-            await SendMsg(msg);
+            // log(`\n\n============== 推送 ==============`)
+            // // log(msg);
+            //
+            // await SendMsg(msg);
         }
     }
 
