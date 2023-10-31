@@ -1,5 +1,5 @@
 /*
-北京汽车 
+北京汽车
 邀请注册：http://wx.smartservice.bjev.com.cn/register.html?id=8a8d81eb82f6b73601830d1ef3967c02
 
 积分换实物
@@ -98,7 +98,7 @@ let okstatus =0;
 
                 Authorization = `Bearer `+bjqcCookieArr[index];
                 //log(Authorization)
-                if(Authorization===undefined){ //未填参数
+                if(Authorization==`Bearer `){ //未填参数
                     log('未填变量bjqcCookie');
                     return
                 }else {
@@ -623,7 +623,6 @@ function fillCode(timeout = 3 * 1000) {
 
         $.post(url, async (error, response, data) => {
             //if (debug===1){log(`这是url\n`+JSON.stringify(url)+`\n这是result\n`+JSON.stringify(data))}
-            log(`这是url\n`+JSON.stringify(url)+`\n这是result\n`+JSON.stringify(data))
             try {
                 let result = data === "undefined" ? await sharereceiveAward() : JSON.parse(data);
                 if (result.code === 0){
