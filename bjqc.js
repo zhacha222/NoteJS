@@ -1,6 +1,7 @@
 /*
 北京汽车
 邀请注册：http://wx.smartservice.bjev.com.cn/register.html?id=8a8d81eb82f6b73601830d1ef3967c02
+已内置邀请码
 
 积分换实物
 自动完成签到、转发以及分享任务，其他任务不会做
@@ -30,7 +31,7 @@ const $ = new Env("北京汽车")
 const Notify = 1;
 
 //===============debug模式=================//
-const debug=0 //0为关闭通知，1为打开通知,默认为1
+const debug=0; //0为关闭debug模式，1为打开debug模式,默认为1
 
 //===============脚本版本=================//
 let scriptVersion = "1.0.0";
@@ -104,7 +105,7 @@ let okstatus =0;
                 }else {
                     UserInfo=``//循环空值
                     log(`\n==============个人信息==============\n`)
-                    await fillCode()
+
                     await getUserInfo()
                     if (status_code === 1) {
                         await $.wait(2 * 1000);
@@ -118,6 +119,7 @@ let okstatus =0;
                         likestatus=0
                         sharestatus=0
                         okstatus=0
+                        TaskForMemberCenter =``//循环空值
                         await selectTaskForMemberCenter() //任务中心
                         log(TaskForMemberCenter)
                         await $.wait(2 * 1000);
@@ -144,7 +146,8 @@ let okstatus =0;
                             await sharereceiveAward() //领取积分
                             await $.wait(2 * 1000);
                         }
-
+                        await fillCode()
+                        await $.wait(2 * 1000);
                         await getPersonalCenter()
                         msg += `账号[${num}]：${name}\n积分：${availableIntegral}\n\n`
                     }
@@ -188,7 +191,7 @@ function getUserInfo(timeout = 3 * 1000) {
             try {
                 let result = data === "undefined" ? await getUserInfo() : JSON.parse(data);
 
-                if (debug===1){log(`这是url\n`+JSON.stringify(url)+`\n这是result\n`+JSON.stringify(result))}
+                if (debug==1){log(`这是url\n`+JSON.stringify(url)+`\n这是result\n`+JSON.stringify(result))}
 
                 if (result.code === 0 ) {
 
@@ -272,9 +275,9 @@ function selectTaskForMemberCenter(timeout = 3 * 1000) {
                         if (result.data[i].groupName === `日常任务` ) {
                             for (let n = 0; n < result.data[i].items.length; n++) {
                                 Task += `\n`+result.data[i].items[n].name +`  ---  `+ result.data[i].items[n].progressDes
-                                if (result.data[i].items[n].name == `点赞`&& result.data[i].items[n].progress != result.data[i].items[n].progressLimit){likestatus==1}
-                                if (result.data[i].items[n].name == `日常签到`&& result.data[i].items[n].progress != result.data[i].items[n].progressLimit){siginstatus==1}
-                                if (result.data[i].items[n].name == `转发分享`&& result.data[i].items[n].progress != result.data[i].items[n].progressLimit){sharestatus==1}
+                                if (result.data[i].items[n].name == `点赞`&& result.data[i].items[n].status != 2){likestatus=1}
+                                if (result.data[i].items[n].name == `日常签到`&& result.data[i].items[n].status != 2 ){siginstatus=1}
+                                if (result.data[i].items[n].name == `转发分享`&& result.data[i].items[n].status != 2){sharestatus=1}
 
                             }
                             TaskForMemberCenter =Task
@@ -622,11 +625,12 @@ function fillCode(timeout = 3 * 1000) {
         }
 
         $.post(url, async (error, response, data) => {
-            //if (debug===1){log(`这是url\n`+JSON.stringify(url)+`\n这是result\n`+JSON.stringify(data))}
+            if (debug===1){log(`这是url\n`+JSON.stringify(url)+`\n这是result\n`+JSON.stringify(data))}
+            // log(`这是url\n`+JSON.stringify(url)+`\n这是result\n`+JSON.stringify(data))
             try {
-                let result = data === "undefined" ? await sharereceiveAward() : JSON.parse(data);
+                let result = data === "undefined" ? await fillCode() : JSON.parse(data);
                 if (result.code === 0){
-                    //log(`领取成功，获得${result.data}积分`)
+                    //log(`邀请码填写成功`)
                 }else {
                     //log(`❌ 领取失败，原因：`+JSON.stringify(result))
                 }
