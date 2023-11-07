@@ -112,9 +112,9 @@ console.log(`【不理解为什么外面卖18r还有人被圈，就简单的抓�
             return;
         }
         let aa = await hh(ids[id])
-        await $.wait(2 * 1000);
+        await $.wait(20 * 1000);
         await dt(JSON.stringify(aa),ids[id])
-        await $.wait(2 * 1000);
+        await $.wait(20 * 1000);
     }
 
 }
