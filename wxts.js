@@ -113,9 +113,9 @@ async function processResult() {
             return;
         }
         let aa = await hh(ids[id])
-        await $.wait(20 * 1000);
+        await $.wait(60 * 1000);
         await dt(JSON.stringify(aa),ids[id])
-        await $.wait(20 * 1000);
+        await $.wait(60 * 1000);
     }
 
 }
