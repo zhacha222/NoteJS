@@ -1,0 +1,10 @@
+[{
+    "mark": "账号1",
+    "userToken": "xxxxx",
+    "refreshToken": "xxxxx"
+    },
+    {
+    "mark": "账号2",
+    "userToken": "xxxxx",
+    "refreshToken": "xxxxx"
+}]
