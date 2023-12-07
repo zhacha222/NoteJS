@@ -1,6 +1,6 @@
 /*
-驴充充app 每天2500积分 用于兑换充电金
-1.下载天天充电app，抓登录包  https://appapi.lvcchong.com/registerOrLoginUser  响应体内的userToken 和 refreshToken
+驴充充app 每天2500积分 用于兑换充电金 充电金自动兑换余额 约两天五元
+1.下载驴充充app，抓登录包  https://appapi.lvcchong.com/registerOrLoginUser  响应体内的userToken 和 refreshToken
 2.mark自己随便填，用于分辨账号
 3.自己手动在本脚本相同目录下，新建一个 lcc_tokens.json 文件，用于储存变量
 4.lcc_tokens.json内的变量格式如下：支持多账号
